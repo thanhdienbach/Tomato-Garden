@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/PlashScene.unity
     guid: 59e626b93f2b731449e5628df7c1f63b
   - enabled: 1
-    path: Assets/Scenes/MainMenuScene.unity
+    path: Assets/Scenes/GameScene.unity
     guid: a727744a79e8caf488642efd7501c6e5
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
