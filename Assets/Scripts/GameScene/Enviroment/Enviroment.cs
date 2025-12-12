@@ -1,17 +1,17 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
+// Enviroment.cs
 using UnityEngine;
 
-public class Enviroment : MonoBehaviour
+[DisallowMultipleComponent]
+public class Enviroment : GameSystem
 {
-    public static Enviroment Instance;
+    public static Enviroment Instance { get; private set; }
 
-    [Header("Child System")]
-    [SerializeField] SkyGroup skyGroup;
+    [Header("Child Systems")]
+    [SerializeField] private SkyGroup skyGroup;
+    [SerializeField] private SkyDecorGroup skyDecorGroup;
 
     [Header("Initial Sky")]
-    [SerializeField] bool applyOnAwake = true;
+    [SerializeField] private bool applyOnAwake = true;
     [SerializeField] private SkyPhase initialPhase = SkyPhase.Day;
 
     public SkyPhase CurrentSkyPhase { get; private set; } = SkyPhase.Day;
@@ -26,38 +26,54 @@ public class Enviroment : MonoBehaviour
 
         Instance = this;
 
-        DontDestroyOnLoad(gameObject);
+        if (skyGroup == null)
+            skyGroup = GetComponentInChildren<SkyGroup>();
 
-        if (applyOnAwake && skyGroup != null)
+        if (skyDecorGroup == null)
+            skyDecorGroup = GetComponentInChildren<SkyDecorGroup>();
+    }
+
+    public override void Init(GameContext _gameContext)
+    {
+        Debug.Log("Enviroment init");
+        if (applyOnAwake)
         {
-            skyGroup.ApplyPhaseInstant(initialPhase);
-            CurrentSkyPhase = initialPhase;
+            SetSkyPhaseInstant(initialPhase);
         }
     }
 
-    public void SetSkyPhase(SkyPhase _skyPhase)
+    public void SetSkyPhase(SkyPhase phase)
     {
-        Debug.Log("Set day");
-        if (skyGroup == null) return;
+        if (phase == CurrentSkyPhase)
+            return;
 
-        if (_skyPhase == CurrentSkyPhase) return;
+        if (skyGroup != null)
+            skyGroup.FadeToPhase(phase);
 
-        skyGroup.FadeToPhase(_skyPhase);
-        CurrentSkyPhase = _skyPhase;
+        if (skyDecorGroup != null)
+            skyDecorGroup.FadeToPhase(phase);
+
+        CurrentSkyPhase = phase;
     }
 
-    public void SetSkyPhaseInstance(SkyPhase _skyPhase)
+    public void SetSkyPhaseInstant(SkyPhase phase)
     {
-        skyGroup.ApplyPhaseInstant(_skyPhase);
-        CurrentSkyPhase = _skyPhase;
+        if (skyGroup != null)
+            skyGroup.ApplyPhaseInstant(phase);
+
+        if (skyDecorGroup != null)
+            skyDecorGroup.ApplyPhaseInstant(phase);
+
+        CurrentSkyPhase = phase;
     }
 
-    #region Shortcut methods
+    #region Shortcuts
+
     public void SetDay() => SetSkyPhase(SkyPhase.Day);
-
     public void SetNight() => SetSkyPhase(SkyPhase.Night);
     public void SetDusk() => SetSkyPhase(SkyPhase.Dusk);
     public void SetEclipse() => SetSkyPhase(SkyPhase.Eclipse);
 
     #endregion
 }
+
